@@ -24,4 +24,31 @@ func (v *Validator) AddError(key, message string) {
 	}
 }
 
-func (v *Validator)Check(ok bool, key, message string)
+func (v *Validator) Check(ok bool, key, message string) {
+	if !ok {
+		v.AddError(key, message)
+	}
+}
+
+func In(value string, list ...string) bool {
+	for i := range list {
+		if value == list[i] {
+			return true
+		}
+	}
+	return false
+}
+
+func Matches(value string, rx regexp.Regexp) bool {
+	return rx.MatchString(value)
+}
+
+func Unique(values []string) bool {
+	uniqueValues := map[string]bool{}
+
+	for i := range values {
+		uniqueValues[values[i]] = true
+	}
+
+	return len(uniqueValues) == len(values)
+}
