@@ -22,6 +22,13 @@ type MovieModel struct {
 	DB *sql.DB
 }
 
+type Movies interface {
+	Insert(movie *Movie) error
+	Get(id int64) (*Movie, error)
+	Update(movie *Movie) error
+	Delete(id int64) error
+}
+
 func (m MovieModel) Insert(movie *Movie) error {
 	query := `
 			INSERT INTO movies (title, year, runtime, genres)
@@ -40,14 +47,78 @@ func (m MovieModel) Insert(movie *Movie) error {
 }
 
 func (m MovieModel) Get(id int64) (*Movie, error) {
-	return nil, nil
+	if id < 1 {
+		return nil, ErrRecordNotFound
+	}
+
+	query := `
+		SELECT id, created_at, title, year, runtime, genres, version 
+		FROM movies
+		WHERE id = $1
+	`
+	movie := &Movie{}
+	if err := m.DB.QueryRow(query, id).Scan(
+		&movie.ID,
+		&movie.CreatedAt,
+		&movie.Title,
+		&movie.Year,
+		&movie.Runtime,
+		pq.Array(&movie.Genres),
+		&movie.Version,
+	); err != nil {
+		switch err {
+		case sql.ErrNoRows:
+			return nil, ErrRecordNotFound
+		default:
+			return nil, err
+		}
+	}
+
+	return movie, nil
 }
 
 func (m MovieModel) Update(movie *Movie) error {
-	return nil
+	query := `
+		UPDATE movies
+		SET title = $1, year = $2, runtime = $3, genres = $4, version = version + 1 
+		WHERE id = $5
+		RETURNING version
+	`
+
+	args := []interface{}{
+		movie.Title,
+		movie.Year,
+		movie.Runtime,
+		pq.Array(movie.Genres),
+		movie.Version,
+	}
+
+	return m.DB.QueryRow(query, args...).Scan(&movie.Version)
 }
 
 func (m MovieModel) Delete(id int64) error {
+	if id<1{
+		return ErrRecordNotFound
+	}
+
+	query :=`
+		DELETE FROM movies
+		WHERE id = $1
+	`
+
+	result, err := m.DB.Exec(query, id)
+	if err!=nil{
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err!=nil{
+		return err
+	}
+
+	if rowsAffected==0{
+		return ErrRecordNotFound
+	}
 	return nil
 }
 
