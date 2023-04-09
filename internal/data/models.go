@@ -20,8 +20,8 @@ func NewModels(db *sql.DB) Models {
 	}
 }
 
-func NewMockModels() Models {
-	return Models{
-		Movies: MockMovieModel{},
-	}
-}
+// func NewMockModels() Models {
+// 	return Models{
+// 		Movies: MockMovieModel{},
+// 	}
+// }
