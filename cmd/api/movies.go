@@ -59,7 +59,7 @@ func (app *application) showMovieHandler(w http.ResponseWriter, r *http.Request)
 		return
 	}
 
-	movie, err := app.models.Get(id)
+	movie, err := app.models.Movies.Get(id)
 	if err != nil {
 		switch err {
 		case data.ErrRecordNotFound:
