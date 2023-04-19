@@ -146,7 +146,7 @@ func (p *password) Matches(plaintextPassword string) (bool, error) {
 
 func ValidateEmail(v *validator.Validator, email string) {
 	v.Check(email != "", "email", "must be provided")
-	v.Check(validator.Matches(email, *validator.EmailRX), "email", "must be a valid email address")
+	v.Check(validator.Matches(email, *validator.EmailRX), "email", "must be a valid email address"+" "+email)
 }
 
 func ValidatePasswordPlaintext(v *validator.Validator, password string) {
@@ -159,7 +159,7 @@ func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(user.Name != "", "name", "must be provided")
 	v.Check(len(user.Name) <= 500, "name", "must not be more than 500 bytes long")
 
-	// ValidateEmail(v, user.Email)???????????????????исправить!!!!!!!!!!!!!!
+	ValidateEmail(v, user.Email) //???????????????????исправить!!!!!!!!!!!!!!
 
 	if user.Password.plaintext != nil {
 		ValidatePasswordPlaintext(v, *user.Password.plaintext)
